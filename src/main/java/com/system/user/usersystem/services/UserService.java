@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
+//Inteface para las implementaciones
 public interface UserService {
     ResponseEntity<User> saveUser(User user);
     ResponseEntity<User>getUser(String email);

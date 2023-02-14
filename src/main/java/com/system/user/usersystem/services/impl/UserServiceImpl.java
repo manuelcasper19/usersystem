@@ -5,6 +5,7 @@ import com.system.user.usersystem.repository.UserRepository;
 import com.system.user.usersystem.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,7 +15,10 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder encoder;
 
+    //Metodo para crear usuario con validaciones básicas
     @Override
     public ResponseEntity<User> saveUser(User user){
 
@@ -24,23 +28,27 @@ public class UserServiceImpl implements UserService {
            return ResponseEntity.badRequest().build();
 
        }else {
-          // PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-           System.out.println("Password " + user.getPassword());
-          // user.setPassword(encoder.encode(user.getPassword()));
+
+            user.setPassword(encoder.encode(user.getPassword()));
             userLocal = userRepository.save( user );
+            userLocal.setPassword("");
        }
        return ResponseEntity.ok(userLocal);
     }
 
+    //Obtenemos usuario por email
     @Override
     public ResponseEntity<User> getUser(String email) {
       User userLocal = userRepository.findOneByEmail( email );
+
       if( userLocal == null ) {
           return ResponseEntity.badRequest().build();
       }
+
         return ResponseEntity.ok( userLocal );
     }
 
+    //Borramos usuario por id
     @Override
     public ResponseEntity<User> deleteUser(Long id) {
         Optional<User> userLocal = userRepository.findById( id);
@@ -52,7 +60,7 @@ public class UserServiceImpl implements UserService {
         }
 
     }
-
+    //Buscamos usuario por id
     @Override
     public ResponseEntity<User> findById(Long id) {
         Optional<User> userLocal = userRepository.findById( id);
@@ -62,12 +70,12 @@ public class UserServiceImpl implements UserService {
             return ResponseEntity.badRequest().build();
         }
     }
-
+    //Actualizamos usuario
     @Override
     public ResponseEntity<User> updateUser(User user) {
 
         if( user.getId() == null){
-            System.out.println("No existe el libro cn id " +user.getId());
+            System.out.println("No existe el usuario con id " +user.getId());
             return ResponseEntity.badRequest().build();
         }
 
@@ -75,10 +83,14 @@ public class UserServiceImpl implements UserService {
             System.out.println("No existe usuario con id " + user.getId());
             return ResponseEntity.badRequest().build();
         }
+        user.setPassword(encoder.encode(user.getPassword()));
         User result = userRepository.save( user);
+        result.setPassword("");
         return ResponseEntity.ok(result);
     }
 
+
+    //Listamos todos los usuarios
     @Override
     public List<User> allUsers() {
         return userRepository.findAll();
